@@ -1,14 +1,38 @@
 <h1>Fibonacci multiplication table</h1>
-<p>This view is still not implemented.</p>
 
-<!--- Render size input here -->
+<div>
+  <label>Size: </label>
+  <input type="text" id="sizeInput" placeholder="The 'n' parameter">
+  <button type="submit" id="generateButton">Generate</button>
+</div>
 
-<% if table %>
+<% if @table %>
   <!--- Render table here -->
 
-  <% if saved %>
+  <% if @saved %>
     <p>Saved!</p>
   <% else %>
-    <!--- Render save button here -->
+    <button id="saveButton">Save</button>
   <% end %>
 <% end %>
+
+<script>
+  let generateButton = document.getElementById('generateButton');
+  let sizeInput = document.getElementById('sizeInput');
+  generateButton.addEventListener('click', function (e) {
+    e.preventDefault();
+    fetch('/generate-table', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        n: sizeInput.value
+      })
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('data', data)
+    })
+  })
+</script>
