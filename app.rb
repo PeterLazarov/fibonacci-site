@@ -1,32 +1,36 @@
 require 'sinatra'
 require 'faraday'
 require 'json'
-require 'net/http'
-require 'rest-client'
-require 'rest-client'
-require './fibonacciAPI'
+require "addressable/uri"
 
-class SinatraApp < Sinatra::Base
-    @table = {}
-    @saved = false
-    
+class SinatraApp < Sinatra::Base    
     get "/" do
         erb :fibonacci
     end
 
-    post "/generate-table" do
-        puts "123"
-        data = JSON.parse(request.body.read, symbolize_names: true)
-        puts "Post WTf #{ data.to_json }"
-        address = 'http://localhost:3001'
-        route = '/fibonacci'
+    get "/fibonacci" do
+        data = request.params
+        puts data
         
-        resp = Faraday.get(address + route, data, {'Accept' => 'application/json'})
-        puts "resp: #{resp.to_json}"
+        resp = Faraday.get('http://localhost:3001/fibonacci', data,  {'Accept' => 'application/json'})
 
         result = ''
         if resp.status == 200 
-            @table = 'resp.body.multiplicationTable'
+            result = resp.body
+        else
+            result = 'Error'
+        end
+
+        result
+    end
+
+    post "/fibonacci" do
+        data = JSON.parse(request.body.read, symbolize_names: true)
+        
+        resp = Faraday.post('http://localhost:3001/fibonacci', data,  {'Accept' => 'application/json'})
+
+        result = ''
+        if resp.status == 200 
             result = resp.body
         else
             result = 'Error'
