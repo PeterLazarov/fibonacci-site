@@ -6,22 +6,48 @@
   <button type="submit" id="generateButton">Generate</button>
 </div>
 
-<% if @table %>
-  <!--- Render table here -->
+<div id="fibonacciTableContainer">
+</div>
 
-  <% if @saved %>
-    <p>Saved!</p>
-  <% else %>
-    <button id="saveButton">Save</button>
-  <% end %>
-<% end %>
+<div id="savePanel">
+  <p id="tableSavedLabel" style="display: none">Saved!</p>
+  <button id="saveButton" style="display: none">Save</button>
+</div>
 
+<style>
+  table, th, td {
+    border: 1px solid black;
+  }
+</style>
 <script>
-  let generateButton = document.getElementById('generateButton');
   let sizeInput = document.getElementById('sizeInput');
-  generateButton.addEventListener('click', function (e) {
+  let generateButton = document.getElementById('generateButton');
+  let saveButton = document.getElementById('saveButton');
+  let tableSavedLabel = document.getElementById('tableSavedLabel');
+  generateButton.addEventListener('click', onGenerateButtonClick)
+  saveButton.addEventListener('click', onSaveButtonClick)
+
+  function onGenerateButtonClick (e) {
     e.preventDefault();
-    fetch('/generate-table', {
+    fetch('/fibonacci?' + new URLSearchParams({n: sizeInput.value}), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('data', data)
+      visualizeFibonacciTable(data)
+
+      saveButton.style.display = 'block';
+      tableSavedLabel.style.display = 'none';
+    })
+  }
+
+  function onSaveButtonClick (e) {
+    e.preventDefault();
+    fetch('/fibonacci', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -32,7 +58,33 @@
     })
     .then((response) => response.json())
     .then((data) => {
-      console.log('data', data)
+      saveButton.style.display = 'none';
+      tableSavedLabel.style.display = 'block';
     })
-  })
+  }
+
+  function visualizeFibonacciTable(data) {
+    let fibonacciTableContainer = document.getElementById('fibonacciTableContainer');
+    let html = constructTableHtml(data.multiplicationTable);
+    
+    fibonacciTableContainer.innerHTML = html;
+  }
+
+  function constructTableHtml (tableData) {
+    let html = '<table id="fibonacciTable">'
+
+    for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
+      const row = tableData[rowIndex];
+      html += '<tr>';
+      for (let cellIndex = 0; cellIndex < row.length; cellIndex++) {
+        const cellNumber = row[cellIndex];
+        html += '<td>' + (typeof cellNumber !== 'object' ? cellNumber : '') + '</td>';
+      }
+      html += '</tr>';      
+    }
+
+    html += '</table>';
+    return html;
+  }
+
 </script>
